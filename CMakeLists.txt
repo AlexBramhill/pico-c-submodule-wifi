@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(submodule-wifi submodule-wifi.cpp )
+add_executable(submodule-wifi wifi-manager.cpp )
 
 pico_set_program_name(submodule-wifi "submodule-wifi")
 pico_set_program_version(submodule-wifi "0.1")
