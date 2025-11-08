@@ -1,13 +1,4 @@
-# Generated Cmake Pico project file
-
 cmake_minimum_required(VERSION 3.13)
-
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Initialise pico_sdk from installed location
-# (note this can come from environment, CMake cache etc)
 
 # == DO NOT EDIT THE FOLLOWING LINES for the Raspberry Pi Pico VS Code Extension to work ==
 if(WIN32)
@@ -23,20 +14,15 @@ if (EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
-set(PICO_BOARD pico2_w CACHE STRING "Board type")
 
-# Pull in Raspberry Pi Pico SDK (must be before project)
-include(pico_sdk_import.cmake)
+if(NOT TARGET pico_stdlib)
+    set(PICO_BOARD pico2_w CACHE STRING "Board type")
+    include(pico_sdk_import.cmake)
+    project(submodule-wifi C CXX ASM)
+    pico_sdk_init()
+endif()
 
-project(submodule-wifi C CXX ASM)
-
-# Initialise the Raspberry Pi Pico SDK
-pico_sdk_init()
-
-# Create a library (not an executable)
-add_library(submodule-wifi
-    wifi-manager.cpp
-)
+add_library(submodule-wifi wifi-manager.cpp)
 
 target_include_directories(submodule-wifi PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
@@ -47,3 +33,6 @@ target_link_libraries(submodule-wifi PUBLIC
     pico_cyw43_arch_lwip_threadsafe_background
 )
 
+target_compile_features(submodule-wifi PUBLIC cxx_std_17)
+
+set_target_properties(submodule-wifi PROPERTIES VERSION 1.0.0)
