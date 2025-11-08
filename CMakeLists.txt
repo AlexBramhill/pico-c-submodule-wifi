@@ -33,30 +33,17 @@ project(submodule-wifi C CXX ASM)
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
 
-# Add executable. Default name is the project name, version 0.1
-
-add_executable(submodule-wifi wifi-manager.cpp )
-
-pico_set_program_name(submodule-wifi "submodule-wifi")
-pico_set_program_version(submodule-wifi "0.1")
-
-# Modify the below lines to enable/disable output over UART/USB
-pico_enable_stdio_uart(submodule-wifi 0)
-pico_enable_stdio_usb(submodule-wifi 0)
-
-# Add the standard library to the build
-target_link_libraries(submodule-wifi
-        pico_stdlib)
-
-# Add the standard include files to the build
-target_include_directories(submodule-wifi PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+# Create a library (not an executable)
+add_library(submodule-wifi
+    wifi-manager.cpp
 )
 
-# Add any user requested libraries
-target_link_libraries(submodule-wifi 
-        pico_cyw43_arch_lwip_threadsafe_background
-        )
+target_include_directories(submodule-wifi PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}
+)
 
-pico_add_extra_outputs(submodule-wifi)
+target_link_libraries(submodule-wifi PUBLIC
+    pico_stdlib
+    pico_cyw43_arch_lwip_threadsafe_background
+)
 
