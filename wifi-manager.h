@@ -3,11 +3,12 @@
 #include <stdint.h>
 #include <string>
 #include <array>
+#include "ILogger.h"
 
 class WifiManager
 {
 public:
-    static WifiManager &getInstance();
+    static WifiManager &getInstance(ILogger *logger = nullptr);
 
     bool connect(const char *ssid, const char *password, const int retryCount, const int timeoutMs);
     void disconnect();
@@ -15,16 +16,15 @@ public:
     bool tryGetIpAddress(std::string &out) const;
 
 private:
-    WifiManager();
+    WifiManager(ILogger *logger);
     ~WifiManager();
 
     bool isInitialized;
+    ILogger *logger;
 
     bool tryInitializeHardware();
     bool tryConnect(const char *ssid, const char *password, int timeoutMs);
     bool tryGetIpAddressAsByte(std::array<uint8_t, 4> &out) const;
-    void printConnectionSuccess(int attemptNumber);
-    void printConnectionFailure(int attemptNumber, bool isLastAttempt);
 
     WifiManager(const WifiManager &) = delete;
     WifiManager &operator=(const WifiManager &) = delete;

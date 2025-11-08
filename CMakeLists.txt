@@ -22,7 +22,9 @@ if(NOT TARGET pico_stdlib)
     pico_sdk_init()
 endif()
 
-add_library(submodule-wifi wifi-manager.cpp)
+add_subdirectory(submodules/logger)
+
+add_library(submodule-wifi wifi-manager.cpp wifi-logger.cpp)
 
 target_include_directories(submodule-wifi PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}
@@ -31,6 +33,7 @@ target_include_directories(submodule-wifi PUBLIC
 target_link_libraries(submodule-wifi PUBLIC
     pico_stdlib
     pico_cyw43_arch_lwip_threadsafe_background
+    submodule-logger
 )
 
 target_compile_features(submodule-wifi PUBLIC cxx_std_17)

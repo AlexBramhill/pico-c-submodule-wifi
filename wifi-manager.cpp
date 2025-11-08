@@ -1,16 +1,20 @@
 #include "wifi-manager.h"
+#include "wifi-logger.h"
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <string>
 #include <array>
 
-WifiManager &WifiManager::getInstance()
+WifiManager &WifiManager::getInstance(ILogger *logger)
 {
-    static WifiManager instance;
+    static WifiManager instance(logger);
     return instance;
 }
 
-WifiManager::WifiManager() : isInitialized(false) {}
+WifiManager::WifiManager(ILogger *logger) : isInitialized(false), logger(logger)
+{
+    WifiLogger::setLogger(logger);
+}
 
 WifiManager::~WifiManager()
 {
@@ -27,19 +31,21 @@ bool WifiManager::connect(const char *ssid, const char *password, const int retr
         return false;
     }
 
-    printf("Connecting to Wi-Fi...\n");
+    WifiLogger::logConnecting();
 
     for (int i = 0; i < retryCount; ++i)
     {
         if (tryConnect(ssid, password, timeoutMs))
         {
-            printConnectionSuccess(i + 1);
+            std::string ip;
+            tryGetIpAddress(ip);
+            WifiLogger::logConnectionSuccess(i + 1, ip);
             return true;
         }
 
         const int attemptNumber = i + 1;
         const bool isLastAttempt = i == retryCount - 1;
-        printConnectionFailure(attemptNumber, isLastAttempt);
+        WifiLogger::logConnectionFailure(attemptNumber, isLastAttempt);
     }
 
     return false;
@@ -50,7 +56,7 @@ void WifiManager::disconnect()
     if (isConnected())
     {
         cyw43_arch_disable_sta_mode();
-        printf("Disconnected from Wi-Fi\n");
+        WifiLogger::logDisconnected();
     }
 }
 
@@ -99,7 +105,7 @@ bool WifiManager::tryInitializeHardware()
 
     if (cyw43_arch_init() != 0)
     {
-        printf("Wi-Fi init failed\n");
+        WifiLogger::logInitFailed();
         return false;
     }
 
@@ -111,29 +117,4 @@ bool WifiManager::tryInitializeHardware()
 bool WifiManager::tryConnect(const char *ssid, const char *password, int timeoutMs)
 {
     return cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, timeoutMs) == 0;
-}
-
-void WifiManager::printConnectionSuccess(int attemptNumber)
-{
-    printf("Connected on attempt %d.\n", attemptNumber);
-
-    std::string ip;
-    if (tryGetIpAddress(ip))
-    {
-        printf("IP address %s\n", ip.c_str());
-    }
-
-    printf("Connected.\n");
-}
-
-void WifiManager::printConnectionFailure(int attemptNumber, bool isLastAttempt)
-{
-    if (!isLastAttempt)
-    {
-        printf("Attempt %d to connect failed. Retrying...\n", attemptNumber);
-    }
-    else
-    {
-        printf("Attempt %d to connect failed. No more retries left.\n", attemptNumber);
-    }
 }

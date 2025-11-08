@@ -1,0 +1,3 @@
+[submodule "submodules/logger"]
+	path = submodules/logger
+	url = https://github.com/AlexBramhill/pico-c-submodule-logger.git
