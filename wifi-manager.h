@@ -2,7 +2,6 @@
 
 #include <stdint.h>
 #include <string>
-#include <optional>
 #include <array>
 
 class WifiManager
@@ -14,8 +13,8 @@ public:
     bool connect(const char *ssid, const char *password);
     void disconnect();
     bool isConnected() const;
-    std::optional<std::array<uint8_t, 4>> getIpAddressOrDefault() const;
-    std::optional<std::string> getIpAddressAsStringOrDefault() const;
+    bool tryGetIpAddress(std::array<uint8_t, 4> &out) const;
+    bool tryGetIpAddressAsString(std::string &out) const;
 
 private:
     WifiManager();

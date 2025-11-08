@@ -2,7 +2,6 @@
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <string>
-#include <optional>
 #include <array>
 
 WifiManager &WifiManager::getInstance()
@@ -44,9 +43,10 @@ bool WifiManager::connect(const char *ssid, const char *password)
 
     printf("Connected.\n");
 
-    if (auto ip = getIpAddressAsStringOrDefault())
+    std::string ip;
+    if (tryGetIpAddressAsString(ip))
     {
-        printf("IP address %s\n", ip->c_str());
+        printf("IP address %s\n", ip.c_str());
     }
 
     return true;
@@ -71,27 +71,28 @@ bool WifiManager::isConnected() const
     return cyw43_tcpip_link_status(&cyw43_state, CYW43_ITF_STA) == CYW43_LINK_UP;
 }
 
-std::optional<std::array<uint8_t, 4>> WifiManager::getIpAddressOrDefault() const
+bool WifiManager::tryGetIpAddress(std::array<uint8_t, 4> &out) const
 {
     if (!isInitialized || !isConnected())
     {
-        return std::nullopt;
+        return false;
     }
 
     const uint8_t *ip_address = (const uint8_t *)&(cyw43_state.netif[0].ip_addr.addr);
-    return std::array<uint8_t, 4>{ip_address[0], ip_address[1], ip_address[2], ip_address[3]};
+    out = {ip_address[0], ip_address[1], ip_address[2], ip_address[3]};
+    return true;
 }
 
-std::optional<std::string> WifiManager::getIpAddressAsStringOrDefault() const
+bool WifiManager::tryGetIpAddressAsString(std::string &out) const
 {
-    auto ip = getIpAddressOrDefault();
-
-    if (!ip)
+    std::array<uint8_t, 4> ip;
+    if (!tryGetIpAddress(ip))
     {
-        return std::nullopt;
+        return false;
     }
 
     char buffer[16];
-    snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d", (*ip)[0], (*ip)[1], (*ip)[2], (*ip)[3]);
-    return std::string(buffer);
+    snprintf(buffer, sizeof(buffer), "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+    out = buffer;
+    return true;
 }
