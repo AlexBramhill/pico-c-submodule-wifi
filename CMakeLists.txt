@@ -31,6 +31,7 @@ target_include_directories(submodule-wifi PUBLIC
 target_link_libraries(submodule-wifi PUBLIC
     pico_stdlib
     pico_cyw43_arch_lwip_threadsafe_background
+    pico_base
 )
 
 target_compile_features(submodule-wifi PUBLIC cxx_std_17)

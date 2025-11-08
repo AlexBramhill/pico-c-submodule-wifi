@@ -2,6 +2,8 @@
 #include "pico/cyw43_arch.h"
 #include <cstdio>
 #include <string>
+#include <optional>
+#include <array>
 
 WifiManager &WifiManager::getInstance()
 {
