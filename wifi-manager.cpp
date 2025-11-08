@@ -20,7 +20,7 @@ WifiManager::~WifiManager()
     }
 }
 
-bool WifiManager::connect(const char *ssid, const char *password)
+bool WifiManager::connect(const char *ssid, const char *password, const int retryCount, const int timeoutMs)
 {
     if (!isInitialized)
     {
@@ -35,26 +35,39 @@ bool WifiManager::connect(const char *ssid, const char *password)
 
     printf("Connecting to Wi-Fi...\n");
 
-    if (cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, 30000))
+    for (int i = 0; i < retryCount; ++i)
     {
-        printf("Failed to connect.\n");
-        return false;
+        if (cyw43_arch_wifi_connect_timeout_ms(ssid, password, CYW43_AUTH_WPA2_AES_PSK, timeoutMs) == 0)
+        {
+            printf("Connected on attempt %d.\n", i + 1);
+            std::string ip;
+            if (tryGetIpAddressAsString(ip))
+            {
+                printf("IP address %s\n", ip.c_str());
+            }
+
+            printf("Connected.\n");
+
+            return true;
+        }
+        else
+        {
+            bool isLastAttempt = (i == retryCount - 1);
+            if (!isLastAttempt)
+            {
+                printf("Attempt %d to connect failed. Retrying...\n", i + 1);
+            }
+            else
+            {
+                printf("Attempt %d to connect failed. No more retries left.\n", i + 1);
+            }
+        }
     }
-
-    printf("Connected.\n");
-
-    std::string ip;
-    if (tryGetIpAddressAsString(ip))
-    {
-        printf("IP address %s\n", ip.c_str());
-    }
-
-    return true;
 }
 
 void WifiManager::disconnect()
 {
-    if (isInitialized && isConnected())
+    if (isConnected())
     {
         cyw43_arch_disable_sta_mode();
         printf("Disconnected from Wi-Fi\n");

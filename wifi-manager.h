@@ -7,13 +7,11 @@
 class WifiManager
 {
 public:
-    // Singleton accessor
     static WifiManager &getInstance();
 
-    bool connect(const char *ssid, const char *password);
+    bool connect(const char *ssid, const char *password, const int retryCount, const int timeoutMs);
     void disconnect();
     bool isConnected() const;
-    bool tryGetIpAddress(std::array<uint8_t, 4> &out) const;
     bool tryGetIpAddressAsString(std::string &out) const;
 
 private:
@@ -21,6 +19,8 @@ private:
     ~WifiManager();
 
     bool isInitialized;
+
+    bool tryGetIpAddress(std::array<uint8_t, 4> &out) const;
 
     WifiManager(const WifiManager &) = delete;
     WifiManager &operator=(const WifiManager &) = delete;
