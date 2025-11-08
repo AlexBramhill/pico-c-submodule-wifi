@@ -12,7 +12,7 @@ public:
     bool connect(const char *ssid, const char *password, const int retryCount, const int timeoutMs);
     void disconnect();
     bool isConnected() const;
-    bool tryGetIpAddressAsString(std::string &out) const;
+    bool tryGetIpAddress(std::string &out) const;
 
 private:
     WifiManager();
@@ -20,7 +20,11 @@ private:
 
     bool isInitialized;
 
-    bool tryGetIpAddress(std::array<uint8_t, 4> &out) const;
+    bool tryInitializeHardware();
+    bool tryConnect(const char *ssid, const char *password, int timeoutMs);
+    bool tryGetIpAddressAsByte(std::array<uint8_t, 4> &out) const;
+    void printConnectionSuccess(int attemptNumber);
+    void printConnectionFailure(int attemptNumber, bool isLastAttempt);
 
     WifiManager(const WifiManager &) = delete;
     WifiManager &operator=(const WifiManager &) = delete;
